@@ -1,0 +1,58 @@
+servers:
+
+  servers:
+
+    - name: RemoteProxy
+      class: yew.modules.socks5:Proxy
+      params:
+        binding:
+          port: 1080
+        upstream: Direct
+        group: group1
+    
+    - name: w/Parent
+      class: yew.modules.socks5:Proxy
+      params:
+        binding:
+          port: 1081
+        upstream: ParentProxy
+
+    - name: w/Error
+      class: yew.modules.socks5:Proxy
+      params:
+        binding:
+          port: 1082
+        upstream: ParentProxyWrongCredentials
+
+components:
+
+  upstreams:
+
+    - name: Direct
+      class: yew.modules.tcp:TCPUpStream
+      params: {}
+
+    - name: ParentProxy
+      class: yew.modules.socks5:ParentProxy
+      params:
+        host: localhost
+        port: 1080
+        username: io
+        password: pwd
+
+    - name: ParentProxyWrongCredentials
+      class: yew.modules.socks5:ParentProxy
+      params:
+        host: localhost
+        port: 1080
+        username: foo
+        password: bar
+
+  groups:
+
+    - name: group1
+      class: yew.modules.base:Group
+      params:
+        users:
+          - username: io
+            password: pwd

@@ -1,0 +1,79 @@
+servers:
+
+  servers:
+    
+    #
+    # HTTP proxy server, listening on port 8080.
+    # Accept restricts access to the ip in the given subnets.
+    #
+
+    - name: ProxyAccept
+      class: yew.modules.http:Proxy
+      params:
+        binding:
+          port: 8080
+        accept:
+          - ::ffff:192.168.1.0/120
+          - ::ffff:127.0.0.0/120
+        upstream: WithDisallow
+
+    #
+    # HTTP proxy server listening on port 8081.
+    # Refuse forbids access to ip in the given subnets.
+    # Group define a group of authorized users.
+    #
+
+    - name: ProxyRefuse
+      class: yew.modules.http:Proxy
+      params:
+        binding:
+          port: 8081
+        refuse:
+          - ::ffff:127.0.0.0/120
+          - ::ffff:192.168.1.10/128
+        upstream: WithAllow
+        group: Group1
+
+components:
+
+  upstreams:
+
+    #
+    # Allow restricts the allowed host to the ones
+    # that match at least one of the listed regex.
+    #
+
+    - name: WithAllow
+      class: yew.modules.tcp:TCPUpStream
+      params:
+        allow:
+          - ^www.foobar.com$
+          - static([0-9]{2}).com
+
+    #
+    # Disallow blocks the host whose name matches
+    # at least one of the regex.
+    #
+
+    - name: WithDisallow
+      class: yew.modules.tcp:TCPUpStream
+      params:
+        disallow:
+          - ads.com
+          - traffic-funky
+
+  groups:
+
+    #
+    # Defines a group of users, identified by username
+    # and password.
+    #
+
+    - name: Group1
+      class: yew.modules.base:Group
+      params:
+        users:
+          - username: io
+            password: pwd
+          - username: foo
+            password: bar
