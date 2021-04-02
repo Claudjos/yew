@@ -1,0 +1,96 @@
+servers:
+
+  servers:
+
+    - name: APIGateway
+      class: yew.modules.http:Proxy
+      params:
+        binding:
+          port: 8080
+        upstream: GatewayDefault
+        rules: GatewayRules
+
+    - name: ReverseProxy
+      class: yew.modules.http:Proxy
+      params:
+        binding:
+          port: 8081
+        upstream: ReverseDefault
+        rules: ReverseRules
+      
+components:
+
+  upstreams:
+
+    - name: GatewayDefault
+      class: yew.modules.tcp:TCPUpStream
+      params:
+        allow:
+          - ^www.fancy-service.com$
+
+    - name: MicroServiceA
+      class: yew.modules.http:WebServer
+      params:
+        host: localhost
+        port: 5001
+
+    - name: MicroServiceB
+      class: yew.modules.http:WebServer
+      params:
+        host: localhost
+        port: 5002
+
+    - name: ReverseDefault
+      class: yew.modules.tcp:TCPUpStream
+      params:
+        allow:
+          - ^www.site-a.com$
+          - ^www.site-b.com$
+
+    - name: SiteA
+      class: yew.modules.http:WebServer
+      params:
+        host: localhost
+        port: 5003
+
+    - name: SiteB
+      class: yew.modules.http:WebServer
+      params:
+        host: localhost
+        port: 5004
+
+  rules:
+
+    - name: GatewayRules
+      class: yew.modules.http:Rules
+      params:
+        rules:
+
+          - match:
+              host: ^www.fancy-service.com$
+              uri: ^/api/shop
+            rewrite:
+              regex: ^/api/shop(.*)$
+              format: "/v1/shop{0}"
+            upstream: MicroServiceA
+
+          - match:
+              host: ^www.fancy-service.com$
+              uri: ^/api/admin
+            rewrite:
+              regex: ^/api/admin(.*)$
+              format: "/v2/admin{0}"
+            upstream: MicroServiceB
+
+    - name: ReverseRules
+      class: yew.modules.http:Rules
+      params:
+        rules:
+
+          - match:
+              host: ^www.site-a.com$
+            upstream: SiteA
+
+          - match:
+              host: ^www.site-b.com$
+            upstream: SiteB
