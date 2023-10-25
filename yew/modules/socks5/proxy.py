@@ -82,8 +82,8 @@ class Proxy(TCPServer):
 			try:
 				psock, pinfo = self.get_upstream(ConnectRequest).open_connection(
 					info.server, request.host, request.port)
-			except ForbiddenHostError:
-				info.server.logger.warning("Forbidden host {}".format(request.host))
+			except ForbiddenHostError as e:
+				info.server.logger.info(f"Requested forbidden host: {e}.")
 				self.final_message(
 					ConnectResponse.error(SOCKS5_REPLY_NOT_ALLOWED), sock, info)
 			except GAIError:

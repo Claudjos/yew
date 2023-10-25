@@ -36,7 +36,7 @@ class TCPUpStream(UpStream):
 			- ForbiddenHostError: Connections to this host are not allowed.
 		"""
 		if not self.can_connect_host(host):
-			raise ForbiddenHostError()
+			raise ForbiddenHostError(host)
 		else:
 			return self.create_socket(server, host, port, bind_device, bind_ip)
 
@@ -144,7 +144,7 @@ class ParentUpStream(TCPUpStream):
 			- ForbiddenHostError: Connections to this host are not allowed.
 		"""
 		if not self.can_connect_host(host):
-			raise ForbiddenHostError()
+			raise ForbiddenHostError(host)
 		else:
 			sock, info = self.create_socket(server, self.parent_host, self.parent_port, 
 				bind_device, bind_ip)

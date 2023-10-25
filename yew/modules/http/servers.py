@@ -82,9 +82,9 @@ class Proxy(TCPServer):
 				info.server.logger.info(str(request))
 				psock, pinfo = info.server.get_upstream(request).open_connection(
 					info.server, *request.getHostPort())
-			except ForbiddenHostError:
+			except ForbiddenHostError as e:
 				self.write_output(HTTP_FORBIDDEN_HOST, sock, info)
-				info.server.logger.info("requested forbidden host.")
+				info.server.logger.info(f"Requested forbidden host: {e}.")
 			except UpStreamError:
 				self.write_output(HTTP_BAD_GATEWAY, sock, info)
 				info.server.logger.exception("upstreamerror")
