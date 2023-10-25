@@ -29,21 +29,38 @@ class ForbiddenHostError(UpStreamError):
 class TCPUpStream(UpStream):
 
 	def open_connection(self, server, host: str, port: int, bind_device: str = None,
-		bind_ip: str = None) -> Tuple[socket.socket, Info]:
-		"""
-		Open a connection
+		bind_ip: str = None) -> tuple[socket.socket, Info]:
+		"""Applies rules and creates a new socket.
 
-		PARAMS
-			- host: remote host to connect
-			- port: remove port to connect
-			- bind_device: (just for Linux) device to use
-			- bind_ip: (for windows?) ip to bind
+		Raises:
+			- ForbiddenHostError: Connections to this host are not allowed.
+		"""
+		if not self.can_connect_host(host):
+			raise ForbiddenHostError()
+		else:
+			return self.create_socket(server, host, port, bind_device, bind_ip)
+
+	def create_socket(self, server, host: str, port: int, bind_device: str = None,
+		bind_ip: str = None) -> tuple[socket.socket, Info]:
+		"""Creates a new socket.
+
+		Args:
+			- server: The server.
+			- host: Remote host to connect.
+			- port: Remote port to connect.
+			- bind_device: Device to use (just for Linux).
+			- bind_ip: IP address to bind (for Windows).
+
+		Returns:
+			The new socket paired with its Info.
+
+		Raises:
+			- BindDeviceError: If it was not possible to bound the socket to given device.
+			- BindIPError: If it was not possible to bound the socket to given IP.
+			- GAIError: If it was not possible to resolve the host address.
 		"""
 		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		sock.setblocking(0)
-
-		if not self.can_connect_host(host):
-			raise ForbiddenHostError()
 
 		if bind_device != None:
 			try:
@@ -53,7 +70,7 @@ class TCPUpStream(UpStream):
 
 		if bind_ip != None:
 			try:
-				sock.bind((bind_ip,0))	# this is just for ipv4 - TODO check the address family - just for windows
+				sock.bind((bind_ip, 0))	# this is just for ipv4 - TODO check the address family - just for windows
 			except BaseException as e:
 				raise BindIPError(f"unable to bind ip {bind_ip}")
 
@@ -93,7 +110,7 @@ class TCPUpStream(UpStream):
 			self._filter_host_allow = False
 			self._filter_host_regex = re.compile("|".join(self.disallowed_host))
 
-	def can_connect_host(self, host):
+	def can_connect_host(self, host: str) -> bool:
 		if self._filter_host_allow is None:
 			return True
 		elif self._filter_host_allow is True:
@@ -119,18 +136,17 @@ class ParentUpStream(TCPUpStream):
 		self.parent_pwd = config.get("password", None)
 
 	def open_connection(self, server, host: str, port: int, bind_device: str = None,
-		bind_ip: str = None) -> Tuple[socket.socket, Info]:
+		bind_ip: str = None) -> tuple[socket.socket, Info]:
+		"""Applies rules and opens a new connection with the parent proxy. Original 
+		tuple (host, port) is stored in the info.
+
+		Raises:
+			- ForbiddenHostError: Connections to this host are not allowed.
 		"""
-		NOTE:
-			New socket is opened towards parent, original tuple (host,port) is stored
-			in the info.
-		"""
-		sock, info = super().open_connection(
-			server,
-			self.parent_host,
-			self.parent_port,
-			bind_device,
-			bind_ip
-		)
-		info["upstream.host_port"] = (host, port)
-		return sock, info
+		if not self.can_connect_host(host):
+			raise ForbiddenHostError()
+		else:
+			sock, info = self.create_socket(server, self.parent_host, self.parent_port, 
+				bind_device, bind_ip)
+			info["upstream.host_port"] = (host, port)
+			return sock, info
