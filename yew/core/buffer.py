@@ -7,7 +7,7 @@ class EndOfBuffer(BaseException):
 
 class Buffer:
 
-	def __init__ ( self, data=b'', index=0 ):
+	def __init__(self, data: bytes = b'', index: int = 0):
 		self.data = BytesIO(data)
 		self.len = len(data)
 		self._mark = 0
@@ -18,21 +18,21 @@ class Buffer:
 	def restore(self):
 		self.data.seek(self._mark)
 
-	def clear ( self ):
+	def clear(self):
 		self.data = BytesIO()
 		self._mark = 0
 		self.len = 0
 
-	def readUByte(self):
-		return int.from_bytes(self.bread(1), byteorder="big");
+	def readUByte(self) -> int:
+		return int.from_bytes(self.bread(1), byteorder = "big");
 
-	def readUShort(self):
-		return int.from_bytes(self.bread(2), byteorder="big");
+	def readUShort(self) -> int:
+		return int.from_bytes(self.bread(2), byteorder = "big");
 
-	def readUInt(self):
-		return int.from_bytes(self.bread(4), byteorder="big");
+	def readUInt(self) -> int:
+		return int.from_bytes(self.bread(4), byteorder = "big");
 
-	def read(self, n=1):
+	def read(self, n: int = 1) -> str:
 		if n==0:
 			return ""
 		elif n>1:
@@ -40,20 +40,20 @@ class Buffer:
 		else:
 			return chr(self.readUByte())
 
-	def bread(self, n=1):
+	def bread(self, n: int = 1) -> bytes:
 		t = self.data.read(n)
 		if t == b'':
 			raise EndOfBuffer()
 		return t
 
-	def readLine ( self ):
+	def readLine(self) -> str:
 		res = b = self.read()
 		while b!= '\n':
 			b = self.read()
 			res += b
 		return res
 
-	def getRemaining(self):
+	def getRemaining(self) -> bytes:
 		return self.data.read()
 
 	def rewind(self):
@@ -66,8 +66,8 @@ class Buffer:
 		self.restore()
 		self.len += len(newdata)
 
-	def __str__(self):
+	def __str__(self) -> str:
 		return "none"
 
-	def __len__ (self):
+	def __len__ (self) -> int:
 		return self.len - self.data.tell()
