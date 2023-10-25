@@ -1,5 +1,8 @@
 import unittest
-from yew.modules.tcp.upstreams import TCPUpStream, ParentUpStream, ForbiddenHostError
+from yew.modules.tcp.upstreams import (
+	TCPUpStream, ParentUpStream, ForbiddenHostError,
+	BindDeviceError, BindIPError, GAIError
+)
 
 
 class TCPUpStreamTestCase(unittest.TestCase):
@@ -31,3 +34,18 @@ class TCPUpStreamTestCase(unittest.TestCase):
 		upstream = ParentUpStream("test", {"disallow": ["abc.com", "^def.net"]})
 		with self.assertRaises(ForbiddenHostError):
 			upstream.open_connection(None, "abc.com", 443)
+
+	def test_create_socket_bind_device_fails(self):
+		upstream = ParentUpStream("test", {})
+		with self.assertRaises(BindDeviceError):
+			upstream.create_socket(None, "abc.com", 443, bind_device="not_existing_device")
+
+	def test_create_socket_bind_ip_fails(self):
+		upstream = ParentUpStream("test", {})
+		with self.assertRaises(BindIPError):
+			upstream.create_socket(None, "abc.com", 443, bind_ip="200.0.0.0")
+
+	def test_create_socket_gai_error(self):
+		upstream = ParentUpStream("test", {})
+		with self.assertRaises(GAIError):
+			upstream.create_socket(None, "not-existing.www", 443)
