@@ -104,17 +104,6 @@ class TCPServer(Server):
 	def final_message(self, message, sock, info):
 		self.write_error(message.to_bytes(), sock, info)
 
-	def buffer_reader(f):
-		def wrapper(sock, info):
-			try:
-				info.input.mark();
-				info.server.read_input(sock, info)
-				f(sock, info)
-				info.input.clear();
-			except EndOfBuffer as e:
-				info.input.restore()
-		return wrapper
-
 	def write_tcp_forward(self, sock, info):
 		datalen = len(info["remaining"])
 		try:
