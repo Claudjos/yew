@@ -116,33 +116,31 @@ class TCPServer(Server):
 		return wrapper
 
 	def write_tcp_forward(self, sock, info):
-		# this can be improved a lot by not clearing and merging the data every time
-		t = info.output.getRemaining()
-		datalen = len(t)
-		info.output.clear()
+		datalen = len(info["remaining"])
 		try:
-			datasent = sock.send(t)
+			datasent = sock.send(info["remaining"])
 			if datasent < datalen:
-				info.output.merge(t[datasent:])
+				info["remaining"] = info["remaining"][datasent:]
 			else:
 				info.server.looper.unregister_for_write(sock)
 				info.server.looper.register_for_read(info["mate"], info["mate_info"])
+				info["remaining"] = None
 		except BlockingIOError:
-			info.output.merge(t)
+			pass
 
 	def read_tcp_forward(self, sock, info):
-		t = sock.recv(65535)
-		if t == b'':
+		buf = sock.recv(65535)
+		if buf == b'':
 			raise EndOfStream()
-		datalen = len(t)
+		datalen = len(buf)
 		try:
-			datasent = info["mate"].send(t)
+			datasent = info["mate"].send(buf)
 			if datasent < datalen:
-				info["mate_info"].output.merge(t[datasent:])
+				info["mate_info"]["remaining"] = buf[datasent:]
 				info.server.looper.unregister_for_read(sock)
 				info.server.looper.register_for_write(info["mate"], info["mate_info"])
 		except BlockingIOError:
-			info["mate_info"].output.merge(t)
+			info["mate_info"]["remaining"] = buf
 			info.server.looper.unregister_for_read(sock)
 			info.server.looper.register_for_write(info["mate"], info["mate_info"])
 
