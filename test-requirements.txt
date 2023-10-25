@@ -1,4 +1,4 @@
 pytest
-pytest-cov==2.10.1
-ddt==1.4.1
+pytest-cov
+ddt
 requests[socks]
