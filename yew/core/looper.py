@@ -32,7 +32,7 @@ class Looper:
 					else:
 						self.remove_sock(sock)
 
-	def remove_sock (self, sock, info=None):
+	def remove_sock(self, sock, info = None):
 		try:
 			self.unregister_for_read(sock)
 		except (ValueError, KeyError):
@@ -43,13 +43,13 @@ class Looper:
 			pass
 		sock.close()
 
-	def register_for_read ( self, sock, data):
+	def register_for_read(self, sock, data):
 		self.register_for(sock, selectors.EVENT_READ, data)
 
-	def register_for_write ( self, sock, data):
+	def register_for_write(self, sock, data):
 		self.register_for(sock, selectors.EVENT_WRITE, data)
 
-	def register_for ( self, sock, value, data):
+	def register_for(self, sock, value, data):
 		"""
 		NOTE
 			- not handling value error for invalid fileobject or fileno<0
@@ -63,10 +63,10 @@ class Looper:
 
 		self.sel.register(sock, events | value, data)
 
-	def unregister_for_read ( self, sock ):
+	def unregister_for_read(self, sock):
 		self.unregister_for(sock,selectors.EVENT_READ)
 
-	def unregister_for_write ( self, sock ):
+	def unregister_for_write(self, sock):
 		self.unregister_for(sock,selectors.EVENT_WRITE)
 
 	def unregister_for(self, sock, value):
