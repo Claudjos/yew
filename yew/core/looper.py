@@ -37,14 +37,16 @@ class Looper:
 
 	def remove_sock(self, sock, info = None):
 		try:
-			self.unregister_for_read(sock)
-		except (ValueError, KeyError):
+			self.sel.unregister(sock)
+		except (KeyError, ValueError):
+			"""
+			KeyError: File descriptor was never registered.
+			ValueError: Invalid file descriptor. E.g., it happens when Looper.remove_sock 
+				is called as a result of handling an OSError 9 'bad file descriptor'.
+			"""
 			pass
-		try:
-			self.unregister_for_write(sock)
-		except (ValueError, KeyError):
-			pass
-		sock.close()
+		finally:
+			sock.close()
 
 	def register_for_read(self, sock, data):
 		self.register_for(sock, selectors.EVENT_READ, data)
