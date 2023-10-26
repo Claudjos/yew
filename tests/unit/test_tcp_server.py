@@ -1,4 +1,4 @@
-import unittest
+import unittest, socket
 from yew.modules.tcp.servers import TCPServer
 from yew.core.info import Info
 from yew.core.looper import Looper
@@ -78,7 +78,7 @@ class TCPServerTestCases(unittest.TestCase):
 		assert len(info["remaining"]) == 6
 		assert info["remaining"] == b"abcdef"
 
-	def test_read_tcp_forward(self):
+	def test_read_tcp_forward_incomplete_send(self):
 		# Initialize stubs
 		srv = DummyServer()
 		srv.set_looper(DummyLooper())
@@ -103,3 +103,33 @@ class TCPServerTestCases(unittest.TestCase):
 		TCPServer.read_tcp_forward(None, sock, info)
 		assert len(info["mate_info"]["remaining"]) == 6
 		assert info["mate_info"]["remaining"] == b"abcdef"
+
+	def test_tcp_forwarding(self):
+		"""Tests: TCPServer.mate, TCPServer.begin_forward, TCPServer.read_tcp_forward."""
+
+		yew_to_alice_sock, alice_to_yew_sock = socket.socketpair()
+		yew_to_bob_sock, bob_to_yew_sock = socket.socketpair()
+		
+		alice_to_yew_sock.send(b'My name is Alice!')
+		bob_to_yew_sock.send(b'My name is Bob!')
+
+		srv = TCPServer("test", {"binding": {"port": 80}})
+		srv.set_looper(DummyLooper())
+
+		yew_to_alice_info, yew_to_bob_info = Info(srv), Info(srv)
+		
+		srv.mate(yew_to_alice_sock, yew_to_alice_info, yew_to_bob_sock, yew_to_bob_info)
+		srv.begin_forward(yew_to_alice_sock, yew_to_alice_info)
+
+		# Forwards alice to bob
+		srv.read_tcp_forward(yew_to_alice_sock, yew_to_alice_info)
+		assert bob_to_yew_sock.recv(32) == b'My name is Alice!'
+
+		# Forwards bob to alice
+		srv.read_tcp_forward(yew_to_bob_sock, yew_to_bob_info)
+		assert alice_to_yew_sock.recv(32) == b'My name is Bob!'
+
+		alice_to_yew_sock.close()
+		yew_to_alice_sock.close()
+		bob_to_yew_sock.close()
+		yew_to_bob_sock.close()
