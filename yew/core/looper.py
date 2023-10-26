@@ -22,10 +22,18 @@ class Looper:
 						info.data.get("handlers.read")(sock, info)
 					if mask & selectors.EVENT_WRITE == selectors.EVENT_WRITE:
 						info.data.get("handlers.write")(sock, info)
-				except (EndOfStream, ConnectionResetError, OSError) as e:
-					info.server.on_connection_failure(sock, info, e)
-				except Exception as e:
-					info.server.on_handler_error(sock, info, e)
+				except (EndOfStream, BrokenPipeError, ConnectionResetError) as e:
+					info.server.logger.debug(f"Connection closed by peer: {type(e)}")
+					info.server.remove_sock(sock, info)
+				except (ConnectionAbortedError, ConnectionRefusedError) as e:
+					info.server.logger.debug(f"Unable to connect: {type(e)}")
+					info.server.remove_sock(sock, info)
+				except OSError:
+					info.server.logger.exception("OS Error")
+					info.server.remove_sock(sock, info)
+				except Exception:
+					info.server.logger.exception("An handler failed")
+					info.server.remove_sock(sock, info)
 
 	def remove_sock(self, sock, info = None):
 		try:

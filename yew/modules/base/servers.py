@@ -77,14 +77,3 @@ class Server(Component):
 
 	def remove_sock(self, sock, info):
 		self.looper.remove_sock(sock)
-
-	def on_handler_error(self, sock: socket.socket, info, e: Exception):
-		self.remove_sock(sock, info)
-		self.logger.exception("An handler failed.")
-
-	def on_connection_failure(self, sock: socket.socket, info, e: Exception):
-		self.remove_sock(sock, info)
-		if isinstance(e, EndOfStream):
-			self.logger.debug("connection closed by the client.")
-		else:
-			self.logger.exception("Connection failure.")
