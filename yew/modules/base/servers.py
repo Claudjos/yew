@@ -69,7 +69,7 @@ class Server(Component):
 			else:
 				return True
 
-	def create_server_socket() -> Tuple[socket.socket, Info]:
+	def create_server_socket(self) -> Tuple[socket.socket, Info]:
 		"""
 		Create a server socket for this server.
 		"""

@@ -1,7 +1,7 @@
 import yaml
 import importlib
 import logging
-from typing import Tuple, List, Type
+from typing import Type
 from .looper import Looper
 from .components import Component
 
@@ -18,7 +18,7 @@ def read_configuration_from_file(file: str) -> dict:
 			return {}
 
 def build_server_sockets(looper: Looper, 
-	configurations: dict) -> List[Tuple["socket.socket", "data"]]:
+	configurations: dict) -> list[tuple["socket.socket", "data"]]:
 	"""
 	Builds the server sockets.
 	"""

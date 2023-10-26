@@ -59,10 +59,10 @@ class Looper:
 		self.sel.register(sock, events | value, data)
 
 	def unregister_for_read(self, sock):
-		self.unregister_for(sock,selectors.EVENT_READ)
+		self.unregister_for(sock, selectors.EVENT_READ)
 
 	def unregister_for_write(self, sock):
-		self.unregister_for(sock,selectors.EVENT_WRITE)
+		self.unregister_for(sock, selectors.EVENT_WRITE)
 
 	def unregister_for(self, sock, value):
 		key = self.sel.get_key(sock)

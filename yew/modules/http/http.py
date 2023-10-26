@@ -30,11 +30,11 @@ class HTTPPacket:
 		for key in self.headers:
 
 			if not key.startswith("proxy"):
-				packet+= key+": "+self.headers[key]+"\r\n"
+				packet += key + ": " + self.headers[key] + "\r\n"
 
-		packet+="\r\n"
+		packet += "\r\n"
 		packet = packet.encode()
-		packet+=self.body
+		packet += self.body
 
 		return packet
 
@@ -166,8 +166,6 @@ class HTTPRequest(HTTPPacket):
 	def host(self):
 		return self.getHostPort()[0]
 	
-
-
 
 from base64 import b64encode, b64decode
 from typing import Tuple
