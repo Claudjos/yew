@@ -26,7 +26,7 @@ class Looper:
 						info.server.on_connection_failure(sock, info, e)
 					else:
 						self.remove_sock(sock)
-				except BaseException as e:
+				except Exception as e:
 					if info is not None:
 						info.server.on_handler_error(sock, info, e)
 					else:
