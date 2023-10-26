@@ -16,21 +16,16 @@ class Looper:
 			for key, mask in events:
 				sock = key.fileobj
 				info = key.data
+				assert info is not None, "Looper.run: socket registered without info"
 				try:
 					if mask & selectors.EVENT_READ == selectors.EVENT_READ:
 						info.data.get("handlers.read")(sock, info)
 					if mask & selectors.EVENT_WRITE == selectors.EVENT_WRITE:
 						info.data.get("handlers.write")(sock, info)
 				except (EndOfStream, ConnectionResetError, OSError) as e:
-					if info is not None:
-						info.server.on_connection_failure(sock, info, e)
-					else:
-						self.remove_sock(sock)
+					info.server.on_connection_failure(sock, info, e)
 				except Exception as e:
-					if info is not None:
-						info.server.on_handler_error(sock, info, e)
-					else:
-						self.remove_sock(sock)
+					info.server.on_handler_error(sock, info, e)
 
 	def remove_sock(self, sock, info = None):
 		try:
