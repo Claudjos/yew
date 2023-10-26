@@ -55,10 +55,7 @@ class Looper:
 		self.register_for(sock, selectors.EVENT_WRITE, data)
 
 	def register_for(self, sock, value, data):
-		"""
-		NOTE
-			- not handling value error for invalid fileobject or fileno<0
-		"""
+		# Not handling ValueError for invalid fileobject or fileno<0
 		try:
 			key = self.sel.get_key(sock)
 			self.sel.unregister(sock)
