@@ -6,7 +6,7 @@ Extendable non-blocking IO proxy server.
 ## Features
 - Multiple proxy running on the same instance
 - HTTP Proxy
-- SOCKS5 Proxy (just CONNECT method)
+- SOCKS5 Proxy (only CONNECT method)
 - Parent Proxy
 - Reverse HTTP Proxy
 - Rewrite HTTP request URI
